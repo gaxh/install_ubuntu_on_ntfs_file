@@ -4,6 +4,7 @@
 
 3. on ntfs_partition, create ubuntu install file
   dd if=/dev/zero of=mint.img bs=1G count=22
+    or create file in windows environment: fsutil.exe file createNew mint.img 22000000000
   mkfs.ext4 mint.img
 
 4. create FAKE block device
