@@ -1,0 +1,22 @@
+1. prepare ext4_partition (for grub) and ntfs_partition (for ubuntu install file)
+
+2. boot ubuntu/linux_mint with live-cd
+
+3. on ntfs_partition, create ubuntu install file
+  dd if=/dev/zero of=mint.img bs=1G count=22
+  mkfs.ext4 mint.img
+
+4. create FAKE block device
+  sudo mknod /dev/sdb b 7 200
+    (/dev/sdb is first non-used device)
+
+5. map install-file to FAKE block device
+  sudo losetup /dev/sdb mint.img  
+
+6. unmount new mapped device if it has been mounted automaticly
+
+7. install ubuntu/linux_mint by ubiquity
+  do NOT unmount partition where ubuntu install file is on
+  install to /dev/sdb (do NOT format partition)
+  select "/dev/sdb Loopback device" for boot loader installation
+  
