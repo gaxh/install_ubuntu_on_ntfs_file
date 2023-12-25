@@ -15,8 +15,49 @@
 
 6. unmount new mapped device if it has been mounted automaticly
 
+*. possibly create swapfile and swapon if memory seems to be NOT enough
+
 7. install ubuntu/linux_mint by ubiquity
   do NOT unmount partition where ubuntu install file is on
   install to /dev/sdb (do NOT format partition)
   select "/dev/sdb Loopback device" for boot loader installation
-  
+  select "continue without a bootloader" if prompted with "bootloader install failed"
+
+8. disable swapfile in install file
+  list:
+    cat /proc/swaps
+  disable:
+    sudo swapoff /target/swapfile
+    sudo swapoff /isodevice/swapfile
+
+9. unmount /target
+  sudo umount /target
+
+10. unmap install-file and delete FAKE block device
+  sudo losetup -d /dev/loop200
+  sudo unlink /dev/sdb
+
+11. add grub entry
+
+function fish_boot_loopback_ubuntu_diskimg {
+	set targetfile1="$@"
+	search --file --set targetdev1 $targetfile1
+	if ! [ -s "($targetdev1)$targetfile1" ]; then
+		echo "file NOT found: " $targetfile1
+		echo "press any key to shutdown"
+		read
+		halt
+	fi
+	echo "file found: ($targetdev1)$targetfile1"
+	probe --set targetdevuuid1 --fs-uuid ($targetdev1)
+	loopback loop0 ($targetdev1)$targetfile1
+	set root=(loop0)
+	linux /boot/vmlinuz root=UUID=$targetdevuuid1 loop=$targetfile1 rw verbose nosplash
+	initrd /boot/initrd.img
+}
+
+menuentry "boot mint diskimg" {
+	fish_boot_loopback_ubuntu_diskimg /mint.img
+}
+
+12. reboot
